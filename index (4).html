@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>المرصد الإخباري العالمي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green:#286140; --gold:#B58500; --navy:#1B365D; --brown:#6E6259;
+    --teal:#6BCABA; --maroon:#952E46; --gray:#C7C8CA;
+    --white:#FFFFFF; --soft-white:#F2F2F2; --black:#5A5959; --soft-black:#707070;
+    --bg:#F7F4EE; --card:#FFFFFF; --line:#E6E2D9;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;background:var(--bg);color:var(--black);min-height:100vh}
+
+  header{background:var(--green);color:var(--white);padding:22px 24px;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+  .header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand svg{width:34px;height:34px;stroke:var(--gold)}
+  .brand h1{font-size:1.35rem;font-weight:700;letter-spacing:.2px}
+  .brand p{font-size:.8rem;color:var(--soft-white);opacity:.85;margin-top:2px}
+  .last-update{font-size:.75rem;color:var(--soft-white);opacity:.8;display:flex;align-items:center;gap:6px}
+  .last-update svg{width:15px;height:15px;stroke:var(--gold)}
+
+  main{max-width:1100px;margin:0 auto;padding:22px 20px 60px}
+
+  /* الإحصاءات */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+  .stat .num{font-size:1.5rem;font-weight:700;color:var(--green)}
+  .stat .lbl{font-size:.78rem;color:var(--soft-black)}
+  .stat.gold .num{color:var(--gold)}
+
+  /* الفلاتر */
+  .filters{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:18px;display:flex;flex-direction:column;gap:14px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{border:1.5px solid var(--green);color:var(--green);background:transparent;border-radius:999px;
+        padding:6px 16px;font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s}
+  .chip:hover{background:rgba(40,97,64,.08)}
+  .chip.active{background:var(--green);color:var(--white)}
+  .controls{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}
+  @media(max-width:680px){.controls{grid-template-columns:1fr}}
+  .field{position:relative}
+  .field svg{position:absolute;top:50%;transform:translateY(-50%);inset-inline-start:10px;width:17px;height:17px;stroke:var(--soft-black);pointer-events:none}
+  input[type=search],select{width:100%;border:1.5px solid var(--gray);border-radius:10px;background:var(--white);
+    padding:9px 36px 9px 12px;font-family:inherit;font-size:.85rem;color:var(--black);appearance:none}
+  input[type=search]:focus,select:focus{outline:none;border-color:var(--green)}
+
+  /* قائمة الأخبار */
+  .list{display:flex;flex-direction:column;gap:10px}
+  .item{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;
+        display:flex;flex-direction:column;gap:8px;transition:.15s}
+  .item:hover{border-color:var(--gold);box-shadow:0 2px 10px rgba(0,0,0,.06)}
+  .item a{color:var(--black);text-decoration:none;font-weight:600;font-size:.95rem;line-height:1.55}
+  .item a:hover{color:var(--green)}
+  .meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.72rem}
+  .badge{border-radius:999px;padding:3px 10px;font-weight:600}
+  .badge.source{border:1px solid var(--gold);color:var(--gold)}
+  .badge.cat{background:rgba(40,97,64,.1);color:var(--green)}
+  .badge.lang{background:var(--soft-white);color:var(--soft-black)}
+  .meta time{color:var(--soft-black);margin-inline-start:auto;display:flex;align-items:center;gap:4px}
+  .meta time svg{width:13px;height:13px;stroke:var(--soft-black)}
+
+  .more{display:block;margin:22px auto 0;border:1.5px solid var(--green);color:var(--green);background:transparent;
+        border-radius:999px;padding:9px 30px;font-family:inherit;font-size:.85rem;font-weight:600;cursor:pointer}
+  .more:hover{background:var(--green);color:var(--white)}
+  .more[hidden]{display:none}
+
+  .empty,.loading{text-align:center;color:var(--soft-black);padding:44px 0;font-size:.9rem}
+  .spinner{width:34px;height:34px;border:3px solid var(--soft-white);border-top-color:var(--green);
+           border-radius:50%;margin:0 auto 12px;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion: reduce){.spinner{animation:none}}
+  .error{background:rgba(149,46,70,.08);border:1px solid var(--maroon);color:var(--maroon);
+         border-radius:12px;padding:14px 16px;font-size:.85rem;margin-bottom:16px;display:none}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <!-- Tabler: world -->
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8M11.5 3a17 17 0 0 0 0 18M12.5 3a17 17 0 0 1 0 18"/></svg>
+      <div>
+        <h1>المرصد الإخباري العالمي</h1>
+        <p>أخبار السعودية والخليج والحرب والتداعيات من كبرى المصادر العالمية، كلٌّ بلغته الأصلية</p>
+      </div>
+    </div>
+    <div class="last-update">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      <span id="lastUpdate">—</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="error" id="errorBox"></div>
+
+  <section class="stats" aria-label="الإحصاءات">
+    <div class="stat"><span class="num" id="stTotal">—</span><span class="lbl">إجمالي الأخبار</span></div>
+    <div class="stat gold"><span class="num" id="stSaudi">—</span><span class="lbl">السعودية</span></div>
+    <div class="stat"><span class="num" id="stGulf">—</span><span class="lbl">الخليج</span></div>
+    <div class="stat"><span class="num" id="stWar">—</span><span class="lbl">الحرب</span></div>
+    <div class="stat"><span class="num" id="stRep">—</span><span class="lbl">التداعيات</span></div>
+  </section>
+
+  <section class="filters" aria-label="التصفية">
+    <div class="chips" id="catChips">
+      <button class="chip active" data-cat="">الكل</button>
+      <button class="chip" data-cat="saudi">السعودية</button>
+      <button class="chip" data-cat="gulf">الخليج</button>
+      <button class="chip" data-cat="war">الحرب</button>
+      <button class="chip" data-cat="repercussions">التداعيات</button>
+    </div>
+    <div class="controls">
+      <div class="field">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><path d="m21 21-6-6"/></svg>
+        <input type="search" id="search" placeholder="البحث في العناوين">
+      </div>
+      <div class="field">
+        <select id="sourceSel"><option value="">جميع المصادر</option></select>
+      </div>
+      <div class="field">
+        <select id="langSel"><option value="">جميع اللغات</option></select>
+      </div>
+    </div>
+  </section>
+
+  <section class="list" id="list" aria-live="polite">
+    <div class="loading"><div class="spinner"></div>جارٍ التحميل</div>
+  </section>
+  <button class="more" id="moreBtn" hidden>عرض المزيد</button>
+</main>
+
+<script>
+/* ============ الإعدادات — ضعي قيم مشروعك هنا ============ */
+const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR-ANON-KEY";
+/* ========================================================= */
+
+const PAGE = 100;
+const CAT_AR = {saudi:"السعودية", gulf:"الخليج", war:"الحرب", repercussions:"التداعيات"};
+const LANG_AR = {ar:"العربية", en:"الإنجليزية", fr:"الفرنسية", de:"الألمانية", it:"الإيطالية",
+                 es:"الإسبانية", ru:"الروسية", ja:"اليابانية", ko:"الكورية", pt:"البرتغالية",
+                 tr:"التركية", he:"العبرية", fa:"الفارسية", zh:"الصينية"};
+
+let state = {cat:"", search:"", source:"", lang:"", offset:0};
+const $ = id => document.getElementById(id);
+const headers = {apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + SUPABASE_ANON_KEY};
+
+function query(extra, range){
+  let url = SUPABASE_URL + "/rest/v1/global_news?select=*" + extra +
+            "&order=published_at.desc.nullslast&order=id.desc";
+  const h = {...headers};
+  if(range){h.Range = range; h["Range-Unit"] = "items"; h.Prefer = "count=exact";}
+  return fetch(url, {headers:h});
+}
+
+function filterParams(){
+  let p = "";
+  if(state.cat)    p += "&categories=cs.{" + state.cat + "}";
+  if(state.source) p += "&source_name=eq." + encodeURIComponent(state.source);
+  if(state.lang)   p += "&language=eq." + encodeURIComponent(state.lang);
+  if(state.search) p += "&title=ilike." + encodeURIComponent("*" + state.search + "*");
+  return p;
+}
+
+async function countWhere(extra){
+  const r = await fetch(SUPABASE_URL + "/rest/v1/global_news?select=id" + extra,
+    {method:"HEAD", headers:{...headers, Prefer:"count=exact", Range:"0-0"}});
+  const cr = r.headers.get("content-range");
+  return cr ? cr.split("/")[1] : "0";
+}
+
+async function loadStats(){
+  try{
+    $("stTotal").textContent = await countWhere("");
+    $("stSaudi").textContent = await countWhere("&categories=cs.{saudi}");
+    $("stGulf").textContent  = await countWhere("&categories=cs.{gulf}");
+    $("stWar").textContent   = await countWhere("&categories=cs.{war}");
+    $("stRep").textContent   = await countWhere("&categories=cs.{repercussions}");
+  }catch(e){/* الإحصاءات ثانوية */}
+}
+
+function relTime(iso){
+  if(!iso) return "";
+  const diff = (Date.now() - new Date(iso).getTime())/1000;
+  if(diff < 3600)   return "قبل " + Math.max(1, Math.floor(diff/60)) + " دقيقة";
+  if(diff < 86400)  return "قبل " + Math.floor(diff/3600) + " ساعة";
+  return "قبل " + Math.floor(diff/86400) + " يوم";
+}
+
+function render(rows, append){
+  const list = $("list");
+  if(!append) list.innerHTML = "";
+  if(!rows.length && !append){
+    list.innerHTML = '<div class="empty">لا توجد أخبار مطابقة للتصفية الحالية</div>';
+    return;
+  }
+  for(const r of rows){
+    const el = document.createElement("article");
+    el.className = "item";
+    const cats = (r.categories||[]).map(c=>'<span class="badge cat">'+(CAT_AR[c]||c)+'</span>').join("");
+    el.innerHTML =
+      '<a href="'+r.link+'" target="_blank" rel="noopener" dir="auto" lang="'+(r.language||"")+'">'+
+        escapeHtml(r.title)+'</a>'+
+      '<div class="meta">'+
+        '<span class="badge source">'+escapeHtml(r.source_name_ar||r.source_name)+'</span>'+
+        '<span class="badge lang">'+(LANG_AR[r.language]||r.language||"")+'</span>'+ cats +
+        '<time><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>'+relTime(r.published_at)+'</time>'+
+      '</div>';
+    list.appendChild(el);
+  }
+}
+
+function escapeHtml(s){return (s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
+
+async function loadNews(append){
+  if(!append){ state.offset = 0; $("list").innerHTML = '<div class="loading"><div class="spinner"></div>جارٍ التحميل</div>'; }
+  try{
+    const r = await query(filterParams(), state.offset + "-" + (state.offset + PAGE - 1));
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    const rows = await r.json();
+    render(rows, append);
+    const cr = r.headers.get("content-range");
+    const total = cr ? parseInt(cr.split("/")[1]) : 0;
+    state.offset += rows.length;
+    $("moreBtn").hidden = state.offset >= total;
+    $("lastUpdate").textContent = "آخر تحديث للعرض: " + new Date().toLocaleTimeString("ar-SA");
+  }catch(e){
+    $("errorBox").style.display = "block";
+    $("errorBox").textContent = "تعذر الاتصال بقاعدة البيانات. يُرجى التحقق من إعدادات Supabase في أعلى الملف. (" + e.message + ")";
+    $("list").innerHTML = "";
+  }
+}
+
+async function loadFilterOptions(){
+  try{
+    const r = await fetch(SUPABASE_URL + "/rest/v1/global_news?select=source_name,source_name_ar,language&limit=2000", {headers});
+    const rows = await r.json();
+    const srcs = new Map(), langs = new Set();
+    rows.forEach(x=>{ srcs.set(x.source_name, x.source_name_ar||x.source_name); if(x.language) langs.add(x.language); });
+    [...srcs.entries()].sort((a,b)=>a[1].localeCompare(b[1],"ar")).forEach(([en,ar])=>{
+      const o=document.createElement("option"); o.value=en; o.textContent=ar; $("sourceSel").appendChild(o);
+    });
+    [...langs].sort().forEach(l=>{
+      const o=document.createElement("option"); o.value=l; o.textContent=LANG_AR[l]||l; $("langSel").appendChild(o);
+    });
+  }catch(e){/* الخيارات ثانوية */}
+}
+
+/* الأحداث */
+$("catChips").addEventListener("click", e=>{
+  const b = e.target.closest(".chip"); if(!b) return;
+  document.querySelectorAll(".chip").forEach(c=>c.classList.remove("active"));
+  b.classList.add("active");
+  state.cat = b.dataset.cat;
+  loadNews(false);
+});
+let searchTimer;
+$("search").addEventListener("input", e=>{
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(()=>{ state.search = e.target.value.trim(); loadNews(false); }, 400);
+});
+$("sourceSel").addEventListener("change", e=>{ state.source = e.target.value; loadNews(false); });
+$("langSel").addEventListener("change", e=>{ state.lang = e.target.value; loadNews(false); });
+$("moreBtn").addEventListener("click", ()=>loadNews(true));
+
+/* تحديث تلقائي كل خمس دقائق */
+setInterval(()=>{ if(state.offset <= PAGE) loadNews(false); loadStats(); }, 5*60*1000);
+
+loadStats();
+loadFilterOptions();
+loadNews(false);
+</script>
+</body>
+</html>
