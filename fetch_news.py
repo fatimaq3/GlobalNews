@@ -15,7 +15,7 @@ import os
 import re
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import feedparser
 import requests
@@ -29,15 +29,22 @@ import requests
 KEYWORDS = {
     "saudi": {
         "bounded": [
-            "saudi", "riyadh", "aramco", "neom", "opec",
-            "arabie saoudite", "riyad",
-            "saudi-arabien", "saudiarabien",
-            "arabia saudita", "arabia saudí", "arábia saudita",
-            "suudi arabistan",
+            "saudi", "riyadh", "aramco", "neom", "opec", "wahhabi",
+            "mbs", "mohammed bin salman", "mohammad bin salman",
+            "bin salman", "crown prince salman", "saudi crown prince",
+            "jeddah", "mecca", "makkah", "medina", "dammam", "al-ula",
+            "red sea global", "pif", "public investment fund",
+            "arabie saoudite", "riyad", "prince heritier saoudien",
+            "saudi-arabien", "saudiarabien", "kronprinz",
+            "arabia saudita", "arabia saudí", "arábia saudita", "principe heredero saudi",
+            "suudi arabistan", "veliaht prens",
         ],
         "substring": [
             "السعودية", "السعوديه", "الرياض", "أرامكو", "ارامكو", "نيوم", "أوبك",
-            "سعودی", "عربستان", "ریاض",
+            "محمد بن سلمان", "بن سلمان", "ولي العهد", "ولي عهد السعودية",
+            "جدة", "مكة", "المدينة المنورة", "الدمام", "العلا",
+            "صندوق الاستثمارات", "الوهابية",
+            "سعودی", "عربستان", "ریاض", "ولیعهد",
             "סעודיה", "ריאד",
             "沙特", "利雅得", "阿美",
             "サウジ", "リヤド",
@@ -47,16 +54,26 @@ KEYWORDS = {
     },
     "gulf": {
         "bounded": [
-            "gulf", "gcc", "uae", "emirates", "qatar", "kuwait", "bahrain",
-            "oman", "hormuz", "abu dhabi", "dubai", "doha",
-            "golfe", "émirats", "qatari",
-            "katar", "kuveyt", "bahreyn", "umman", "körfez", "hürmüz",
-            "golfo", "emiratos", "emirados", "emirati",
+            "gulf state", "gulf states", "gulf countries", "gulf region",
+            "gulf cooperation", "gcc", "persian gulf", "arabian gulf",
+            "uae", "u.a.e", "emirates", "emirati", "abu dhabi", "dubai", "sharjah",
+            "qatar", "qatari", "doha",
+            "kuwait", "kuwaiti",
+            "bahrain", "bahraini", "manama",
+            "oman", "omani", "muscat",
+            "strait of hormuz", "hormuz",
+            "etats du golfe", "pays du golfe", "golfe persique", "emirats arabes",
+            "golfstaaten", "persischer golf",
+            "stati del golfo", "golfo persico",
+            "estados del golfo", "estados do golfo",
+            "korfez ulkeleri", "basra korfezi", "hurmuz",
         ],
         "substring": [
-            "الخليج", "الإمارات", "الامارات", "قطر", "الكويت", "البحرين",
-            "عمان", "عُمان", "هرمز", "أبوظبي", "ابوظبي", "دبي", "الدوحة",
-            "مجلس التعاون",
+            "الخليج", "دول الخليج", "الخليج العربي", "الخليج الفارسي",
+            "الإمارات", "الامارات", "قطر", "الكويت", "البحرين",
+            "سلطنة عمان", "عُمان", "مضيق هرمز", "هرمز",
+            "أبوظبي", "ابوظبي", "دبي", "الشارقة", "الدوحة", "المنامة", "مسقط",
+            "مجلس التعاون", "مجلس التعاون الخليجي",
             "خلیج", "امارات", "کویت", "بحرین", "هرمز",
             "המפרץ", "קטר", "כווית", "בחריין", "עומאן", "אמירויות",
             "海湾", "波斯湾", "阿联酋", "卡塔尔", "科威特", "巴林", "阿曼", "霍尔木兹", "迪拜", "多哈",
@@ -65,45 +82,73 @@ KEYWORDS = {
             "Персидск", "залив", "ОАЭ", "Катар", "Кувейт", "Бахрейн", "Оман", "Ормуз", "Дубай", "Доха",
         ],
     },
-    "war": {
+    # حرب إيران: تُصنّف فقط عند اجتماع (طرف إيراني) + (حرب أو تداعيات).
+    # المطابقة الفعلية تتم في classify()، وهنا نضع كلمات "الحرب/التداعيات".
+    "iran_war": {
         "bounded": [
-            "war", "airstrike", "air strike", "missile", "invasion", "offensive",
-            "military", "troops", "bombing", "shelling", "drone attack", "ceasefire",
-            "guerre", "frappe", "attaque", "invasion", "militaire",
-            "krieg", "angriff", "rakete", "luftangriff", "militär",
-            "guerra", "attacco", "missile", "invasione", "militare",
-            "ataque", "misil", "invasión", "militar", "míssil", "invasão",
-            "savaş", "saldırı", "füze", "işgal", "askeri", "ateşkes",
+            # عسكري / حرب
+            "war", "warfare", "battle", "combat", "conflict", "frontline", "front line",
+            "airstrike", "air strike", "strike", "missile", "rocket", "shelling",
+            "invasion", "offensive", "assault", "incursion", "siege", "escalation",
+            "military", "troops", "soldiers", "army", "militia", "proxy",
+            "bombing", "bombardment", "drone", "drone strike", "drone attack", "artillery",
+            "ceasefire", "truce", "clashes", "casualties", "retaliation", "attack",
+            "enrichment", "nuclear", "uranium", "centrifuge", "snapback",
+            # تداعيات (اقتصادية / مالية / سياسية) الناتجة عن الحرب
+            "sanctions", "embargo", "blockade", "oil price", "crude", "energy price",
+            "shipping", "tanker", "maritime", "insurance", "supply chain",
+            "crisis", "tensions", "diplomatic", "talks", "negotiations", "deal",
+            "guerre", "frappe", "missile", "sanctions", "petrole", "petrolier",
+            "krieg", "angriff", "rakete", "sanktionen", "olpreis",
+            "guerra", "attacco", "missile", "sanzioni", "petrolio",
+            "ataque", "misil", "sanciones", "petroleo",
+            "savas", "saldiri", "fuze", "yaptirim", "petrol",
         ],
         "substring": [
-            "حرب", "قصف", "غارة", "غارات", "هجوم", "هجمات", "صاروخ", "صواريخ",
-            "اجتياح", "معارك", "عسكري", "عسكرية", "مسيّرة", "مسيرات", "وقف إطلاق النار",
-            "جنگ", "حمله", "موشک", "نظامی", "پهپاد",
-            "מלחמה", "תקיפה", "טיל", "פלישה", "צבאי", "הפצצה",
-            "战争", "空袭", "袭击", "导弹", "入侵", "军事", "轰炸", "无人机袭击", "停火",
-            "戦争", "空爆", "攻撃", "ミサイル", "侵攻", "軍事", "無人機", "停戦",
-            "전쟁", "공습", "공격", "미사일", "침공", "군사", "무인기", "휴전",
-            "война", "войн", "удар", "атак", "ракет", "вторжени", "военн", "обстрел", "перемири",
+            "حرب", "قصف", "غارة", "غارات", "ضربة", "ضربات", "هجوم", "هجمات",
+            "صاروخ", "صواريخ", "مسيّرة", "مسيرات", "طائرة مسيرة", "اجتياح", "توغل",
+            "تصعيد", "اشتباك", "اشتباكات", "عسكري", "عسكرية", "ميليشيا", "ميليشيات",
+            "وقف إطلاق النار", "هدنة", "قتلى", "ضحايا", "رد", "انتقام",
+            "نووي", "تخصيب", "يورانيوم", "أجهزة الطرد",
+            "عقوبات", "حظر", "حصار", "أسعار النفط", "النفط", "ناقلة", "ناقلات",
+            "الملاحة", "سلاسل الإمداد", "أزمة", "توتر", "توترات", "مفاوضات", "اتفاق", "دبلوماسي",
+            "جنگ", "موشک", "پهپاد", "تحریم", "تنش", "هسته‌ای", "غنی‌سازی",
+            "מלחמה", "טיל", "סנקציות", "גרעין", "העשרה",
+            "战争", "导弹", "制裁", "核", "浓缩铀", "石油",
+            "戦争", "ミサイル", "制裁", "核", "石油",
+            "전쟁", "미사일", "제재", "핵", "석유",
+            "война", "ракет", "санкци", "ядерн", "нефт",
         ],
     },
-    "repercussions": {
-        "bounded": [
-            "escalation", "sanctions", "crisis", "tensions", "fallout", "repercussions",
-            "escalade", "crise", "eskalation", "sanktionen", "krise", "spannungen",
-            "sanzioni", "crisi", "tensioni",
-            "escalada", "sanciones", "tensiones", "sanções", "tensões",
-            "gerilim", "yaptırım", "kriz", "tırmanma",
-        ],
-        "substring": [
-            "تداعيات", "تصعيد", "عقوبات", "أزمة", "ازمة", "توتر", "توترات",
-            "تنش", "تحریم", "بحران", "تشدید",
-            "הסלמה", "סנקציות", "משבר", "מתיחות",
-            "升级", "制裁", "危机", "紧张",
-            "制裁", "危機", "緊張", "エスカレート",
-            "제재", "위기", "긴장", "확전",
-            "эскалаци", "санкци", "кризис", "напряжен",
-        ],
-    },
+}
+
+# أطراف حرب إيران: لا يُصنّف الخبر "حرب إيران" إلا إذا ذُكر أحد هؤلاء
+# إلى جانب كلمة حرب/تداعيات من قائمة iran_war أعلاه.
+IRAN_AXIS = {
+    "bounded": [
+        "iran", "iranian", "tehran", "irgc", "revolutionary guard", "quds force",
+        "houthi", "houthis", "ansar allah", "ansarallah",
+        "hezbollah", "hizbollah", "hizbullah",
+        "khamenei", "iran-backed", "iran backed", "tehran-backed",
+        "proxy", "proxies", "axis of resistance",
+        "iran", "iranien", "teheran", "houthis", "hezbollah",
+        "iran", "iranisch", "teheran", "huthi", "hisbollah",
+        "iran", "iraniano", "teheran", "houthi", "hezbollah",
+        "iran", "irani", "teheran", "huties", "hezbola",
+        "iran", "tahran", "husi", "hizbullah",
+    ],
+    "substring": [
+        "إيران", "ايران", "إيراني", "ايراني", "طهران", "الحرس الثوري", "فيلق القدس",
+        "الحوثي", "الحوثيون", "الحوثيين", "أنصار الله", "انصار الله",
+        "حزب الله", "خامنئي", "الميليشيات", "ميليشيات إيران", "أذرع إيران",
+        "محور المقاومة", "وكلاء إيران", "الوكلاء",
+        "ایران", "تهران", "سپاه", "حوثی", "حزب‌الله", "خامنه‌ای",
+        "איראן", "טהראן", "חות'ים", "חיזבאללה",
+        "伊朗", "德黑兰", "胡塞", "真主党", "革命卫队",
+        "イラン", "テヘラン", "フーシ", "ヒズボラ", "革命防衛隊",
+        "이란", "테헤란", "후티", "헤즈볼라", "혁명수비대",
+        "Иран", "Тегеран", "хуситы", "Хезболла", "КСИР",
+    ],
 }
 
 # فئات الحرب والتداعيات وحدها لا تكفي — لا بد أن يرتبط الخبر بالسعودية أو الخليج
@@ -112,40 +157,58 @@ KEYWORDS = {
 CATEGORY_LABELS_AR = {
     "saudi": "السعودية",
     "gulf": "الخليج",
-    "war": "الحرب",
-    "repercussions": "التداعيات",
+    "iran_war": "حرب إيران",
 }
+
+# لا نقبل الأخبار الأقدم من هذه المدة (بالأيام)
+MAX_AGE_DAYS = 90
 
 MAX_ENTRIES_PER_FEED = 50
 REQUEST_TIMEOUT = 20
 HEADERS = {"User-Agent": "Mozilla/5.0 (GlobalNewsMonitor/1.0; +https://github.com)"}
 
 
+def _compile_group(groups):
+    bounded = [
+        re.compile(r"\b" + re.escape(kw) + r"\b", re.IGNORECASE | re.UNICODE)
+        for kw in groups["bounded"]
+    ]
+    return (bounded, groups["substring"])
+
+
 def compile_patterns():
-    compiled = {}
-    for cat, groups in KEYWORDS.items():
-        bounded = [
-            re.compile(r"\b" + re.escape(kw) + r"\b", re.IGNORECASE | re.UNICODE)
-            for kw in groups["bounded"]
-        ]
-        substr = groups["substring"]
-        compiled[cat] = (bounded, substr)
-    return compiled
+    return {cat: _compile_group(groups) for cat, groups in KEYWORDS.items()}
 
 
 PATTERNS = compile_patterns()
+AXIS_PATTERN = _compile_group(IRAN_AXIS)
+
+
+def _matches(text, low, compiled):
+    bounded, substr = compiled
+    if any(p.search(text) for p in bounded):
+        return True
+    return any(kw.lower() in low for kw in substr)
 
 
 def classify(text: str):
-    """يعيد قائمة الفئات المطابقة للنص."""
+    """يعيد قائمة الفئات المطابقة للنص.
+
+    saudi / gulf: مطابقة مباشرة بالكلمات المفتاحية.
+    iran_war: يُصنّف فقط عند اجتماع (طرف إيراني: إيران/الحوثي/حزب الله/الميليشيات)
+              مع (كلمة حرب أو تداعيات). خبر حرب عام بلا طرف إيراني لا يدخل.
+    """
     cats = []
     low = text.lower()
-    for cat, (bounded, substr) in PATTERNS.items():
-        hit = any(p.search(text) for p in bounded)
-        if not hit:
-            hit = any(kw.lower() in low for kw in substr)
-        if hit:
-            cats.append(cat)
+    for cat, compiled in PATTERNS.items():
+        if cat == "iran_war":
+            has_conflict = _matches(text, low, compiled)
+            has_axis = _matches(text, low, AXIS_PATTERN)
+            if has_conflict and has_axis:
+                cats.append(cat)
+        else:
+            if _matches(text, low, compiled):
+                cats.append(cat)
     return cats
 
 
@@ -178,6 +241,18 @@ def entry_published(entry):
     return None
 
 
+def entry_dt(entry):
+    """يعيد تاريخ الخبر ككائن datetime أو None."""
+    for key in ("published_parsed", "updated_parsed"):
+        val = entry.get(key)
+        if val:
+            try:
+                return datetime(*val[:6], tzinfo=timezone.utc)
+            except Exception:  # noqa: BLE001
+                pass
+    return None
+
+
 def clean_google_title(title: str) -> str:
     """عناوين Google News تنتهي بـ' - Source Name'؛ نحذف الذيل."""
     return re.sub(r"\s+-\s+[^-]+$", "", title).strip()
@@ -186,6 +261,7 @@ def clean_google_title(title: str) -> str:
 def collect_articles(sources):
     rows = []
     seen_links = set()
+    cutoff = datetime.now(timezone.utc) - timedelta(days=MAX_AGE_DAYS)
     for src in sources:
         feeds = list(src.get("feeds") or [])
         used_google = False
@@ -213,6 +289,10 @@ def collect_articles(sources):
                 continue
             if used_google:
                 title = clean_google_title(title)
+            # تجاهل الأخبار الأقدم من الحد المسموح (يمنع نتائج الأرشيف القديمة)
+            dt = entry_dt(entry)
+            if dt is not None and dt < cutoff:
+                continue
             summary = re.sub(r"<[^>]+>", " ", entry.get("summary") or "")
             cats = classify(f"{title} {summary}")
             if not cats:
