@@ -29,7 +29,7 @@
 
   main{max-width:1120px;margin:0 auto;padding:22px 20px 60px}
 
-  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
   @media(max-width:720px){.stats{grid-template-columns:repeat(2,1fr)}}
   .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:3px}
   .stat .num{font-size:1.55rem;font-weight:700;color:var(--green);line-height:1}
@@ -101,7 +101,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8M11.5 3a17 17 0 0 0 0 18M12.5 3a17 17 0 0 1 0 18"/></svg>
       <div>
         <h1>Global News Monitor</h1>
-        <p>Saudi Arabia, Gulf, war &amp; repercussions — from leading world sources, each in its original language</p>
+        <p>Saudi Arabia, Gulf States &amp; war — from leading world sources, each in its original language</p>
       </div>
     </div>
     <div class="updated">
@@ -117,18 +117,16 @@
   <section class="stats" aria-label="Statistics">
     <div class="stat is-total"><span class="num" id="stTotal">—</span><span class="lbl">Total</span></div>
     <div class="stat is-gold"><span class="num" id="stSaudi">—</span><span class="lbl">Saudi Arabia</span></div>
-    <div class="stat"><span class="num" id="stGulf">—</span><span class="lbl">Gulf</span></div>
+    <div class="stat"><span class="num" id="stGulf">—</span><span class="lbl">Gulf States</span></div>
     <div class="stat"><span class="num" id="stWar">—</span><span class="lbl">War</span></div>
-    <div class="stat"><span class="num" id="stRep">—</span><span class="lbl">Repercussions</span></div>
   </section>
 
   <section class="toolbar" aria-label="Filters">
     <div class="chips" id="catChips">
       <button class="chip active" data-cat="">All</button>
       <button class="chip" data-cat="saudi">Saudi Arabia</button>
-      <button class="chip" data-cat="gulf">Gulf</button>
+      <button class="chip" data-cat="gulf">Gulf States</button>
       <button class="chip" data-cat="war">War</button>
-      <button class="chip" data-cat="repercussions">Repercussions</button>
     </div>
     <div class="row2">
       <div class="field search-field">
@@ -165,7 +163,7 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 /* =============================================================== */
 
 const PAGE = 100;
-const CAT_LABEL = {saudi:"Saudi Arabia", gulf:"Gulf", war:"War", repercussions:"Repercussions"};
+const CAT_LABEL = {saudi:"Saudi Arabia", gulf:"Gulf States", war:"War"};
 const LANG_LABEL = {ar:"Arabic", en:"English", fr:"French", de:"German", it:"Italian",
                     es:"Spanish", ru:"Russian", ja:"Japanese", ko:"Korean", pt:"Portuguese",
                     tr:"Turkish", he:"Hebrew", fa:"Persian", zh:"Chinese"};
@@ -196,7 +194,6 @@ async function loadStats(){
     $("stSaudi").textContent = await countWhere("&categories=cs.{saudi}");
     $("stGulf").textContent  = await countWhere("&categories=cs.{gulf}");
     $("stWar").textContent   = await countWhere("&categories=cs.{war}");
-    $("stRep").textContent   = await countWhere("&categories=cs.{repercussions}");
   }catch(e){}
 }
 
