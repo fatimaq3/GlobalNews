@@ -161,6 +161,8 @@
 <script>
 /* ============ CONFIG — put your project values here ============ */
 const SUPABASE_URL = "https://tkmatxmnmphmuykhywtv.supabase.co";
+const SUPABASE_ANON_KEY = "";
+
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRrbWF0eG1ubXBobXV5a2h5d3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0MDM1NDgsImV4cCI6MjA5NTk3OTU0OH0.NUwIIhKfqILel1a12HL2NYS-R-iky0E2U7o9tlgtKac";
 /* =============================================================== */
 
@@ -229,7 +231,6 @@ function render(rows, append){
       '<div class="item-meta">'+
         '<span class="m source">'+escapeHtml(r.source_name)+'</span>'+
         '<span class="m">'+
-          '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14M5 8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2M5 8v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"/></svg>'+
           (LANG_LABEL[r.language]||r.language||"")+'</span>'+
         '<span class="m">'+
           '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>'+
