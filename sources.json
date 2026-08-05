@@ -41,6 +41,8 @@
     {"name": "The National", "name_ar": "ذا ناشيونال", "country": "AE", "language": "en", "feeds": [], "google_fallback": {"domain": "thenationalnews.com", "hl": "en-US", "gl": "US", "ceid": "US:en"}},
     {"name": "G1 / TV Globo", "name_ar": "غلوبو", "country": "BR", "language": "pt", "feeds": ["https://g1.globo.com/rss/g1/mundo/"]},
     {"name": "CBC News", "name_ar": "سي بي سي", "country": "CA", "language": "en", "feeds": ["https://www.cbc.ca/webfeed/rss/rss-world"]},
-    {"name": "ABC Australia", "name_ar": "إيه بي سي الأسترالية", "country": "AU", "language": "en", "feeds": ["https://www.abc.net.au/news/feed/51120/rss.xml"]}
+    {"name": "ABC Australia", "name_ar": "إيه بي سي الأسترالية", "country": "AU", "language": "en", "feeds": ["https://www.abc.net.au/news/feed/51120/rss.xml"]},
+    {"name": "Foreign Affairs", "name_ar": "فورين أفيرز", "country": "US", "language": "en", "feeds": ["https://www.foreignaffairs.com/rss.xml"], "google_fallback": {"domain": "foreignaffairs.com", "hl": "en-US", "gl": "US", "ceid": "US:en"}},
+    {"name": "Foreign Policy", "name_ar": "فورين بوليسي", "country": "US", "language": "en", "feeds": ["https://foreignpolicy.com/feed/"], "google_fallback": {"domain": "foreignpolicy.com", "hl": "en-US", "gl": "US", "ceid": "US:en"}}
   ]
 }
