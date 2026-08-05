@@ -101,7 +101,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8M11.5 3a17 17 0 0 0 0 18M12.5 3a17 17 0 0 1 0 18"/></svg>
       <div>
         <h1>Global News Monitor</h1>
-        <p>Saudi Arabia, Gulf States &amp; war — from leading world sources, each in its original language</p>
+        <p>Saudi Arabia, the Gulf &amp; the Iran conflict — from leading world sources, each in its original language</p>
       </div>
     </div>
     <div class="updated">
@@ -118,7 +118,7 @@
     <div class="stat is-total"><span class="num" id="stTotal">—</span><span class="lbl">Total</span></div>
     <div class="stat is-gold"><span class="num" id="stSaudi">—</span><span class="lbl">Saudi Arabia</span></div>
     <div class="stat"><span class="num" id="stGulf">—</span><span class="lbl">Gulf States</span></div>
-    <div class="stat"><span class="num" id="stWar">—</span><span class="lbl">War</span></div>
+    <div class="stat"><span class="num" id="stIran">—</span><span class="lbl">Iran War</span></div>
   </section>
 
   <section class="toolbar" aria-label="Filters">
@@ -126,7 +126,7 @@
       <button class="chip active" data-cat="">All</button>
       <button class="chip" data-cat="saudi">Saudi Arabia</button>
       <button class="chip" data-cat="gulf">Gulf States</button>
-      <button class="chip" data-cat="war">War</button>
+      <button class="chip" data-cat="iran_war">Iran War</button>
     </div>
     <div class="row2">
       <div class="field search-field">
@@ -159,11 +159,13 @@
 <script>
 /* ============ CONFIG — put your project values here ============ */
 const SUPABASE_URL = "https://tkmatxmnmphmuykhywtv.supabase.co";
+const SUPABASE_ANON_KEY = "
+
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRrbWF0eG1ubXBobXV5a2h5d3R2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0MDM1NDgsImV4cCI6MjA5NTk3OTU0OH0.NUwIIhKfqILel1a12HL2NYS-R-iky0E2U7o9tlgtKac";
 /* =============================================================== */
 
 const PAGE = 100;
-const CAT_LABEL = {saudi:"Saudi Arabia", gulf:"Gulf States", war:"War"};
+const CAT_LABEL = {saudi:"Saudi Arabia", gulf:"Gulf States", iran_war:"Iran War"};
 const LANG_LABEL = {ar:"Arabic", en:"English", fr:"French", de:"German", it:"Italian",
                     es:"Spanish", ru:"Russian", ja:"Japanese", ko:"Korean", pt:"Portuguese",
                     tr:"Turkish", he:"Hebrew", fa:"Persian", zh:"Chinese"};
@@ -193,7 +195,7 @@ async function loadStats(){
     $("stTotal").textContent = await countWhere("");
     $("stSaudi").textContent = await countWhere("&categories=cs.{saudi}");
     $("stGulf").textContent  = await countWhere("&categories=cs.{gulf}");
-    $("stWar").textContent   = await countWhere("&categories=cs.{war}");
+    $("stIran").textContent  = await countWhere("&categories=cs.{iran_war}");
   }catch(e){}
 }
 
